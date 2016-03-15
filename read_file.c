@@ -84,12 +84,89 @@ void encrypt_File(FILE * file, char filename[], char message[]){
 }
 
 
+void splitFiles(FILE * readFile, int filesize, int pieceSize){
+	int splitNumber = (filesize/pieceSize) + 1;
+	int lastPiece = (int) filesize % pieceSize;
+	int i,j;
 
 
+	FILE * pieces[splitNumber];
+	unsigned char storage1[pieceSize + 1];
+	unsigned char storage2[lastPiece + 1];
+	
+	for (i = 0 ,j = 0; i < splitNumber ; i++, j += pieceSize ){
+	
+		if(i == splitNumber-1){
+			fseek(readFile, j, SEEK_SET);
+			fread(&storage2, 1, lastPiece, readFile);
+			pieces[i] = fopen(randomFileName(), "wb");
+			fwrite(&storage2, 1, lastPiece, pieces[i]);
+			
+		} else {
+			pieces[i] = fopen(randomFileName(), "wb");
+			fseek(readFile, j, SEEK_SET);
+			fread(&storage1, 1, pieceSize, readFile);
+			fwrite(&storage1, 1, pieceSize, pieces[i]);
+		}
+		
+		fclose(pieces[i]);
+	}
+	
+}
+
+const char * randomFileName(){
+	char c= 'a';
+	char *string = (char*) malloc (sizeof(char) * 11);
+	int i;
+	for ( i =0; i <10; i++){
+		string[i] = c + (rand() %26);
+	}
+	string[10] = '\0';
+	return string;
+}
 
 
+int fileSize(FILE * file){
+	int size = 0;
+	fseek(file,0L, SEEK_END);
+	size = ftell(file);
+	fseek(file,0L, SEEK_SET);
+	return size;	
+}
+
+int findSizeofPieces(int fileSize){
+	if (fileSize <= 100){
+		return 10;
+	} else if (fileSize <= 1000){
+		return 50;
+	} else if (fileSize <= 10000){
+		return 1000;
+	} else if (fileSize <= 100000){
+		return 10000;
+	} else if (fileSize <= 1000000){
+		return 100000;
+	} else if (fileSize <= 50000000){
+		return 1000000;
+	} else if (fileSize <= 100000000){
+		return 10000000;
+	} else if (fileSize <= 1000000000){
+		return 100000000;
+	} 
+	return 1000000000;
+}
 
 
+void piece_Files(FILE * file, char[] piece, int location){
+  FILE * open_piece;
+  open_piece = fopen(piece,"rb");
+  unsigned char storage[fileSize(open_piece];
+			/*
+  Open piece, check message, write open_piece to file
+  if it's the last piece, return, else recursively get next file)
 
+			 */
+
+
+}
 
 
