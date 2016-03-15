@@ -1,0 +1,27 @@
+FILE ENCRYPTION SYSTEM
+
+—Encrypt AES 
+
+—Spilt Encrypted File 
+	— create FileName 
+	— if first, produce second name to place inside first piece
+        — if last, place file type inside
+
+
+—Re-piece Files
+	—Give it first, take message out that gives you next file location
+	— recursively call function until last piece
+	— save file as extension found in last piece
+	
+— Decrypt AES
+
+
+———————
+
+APPLICATION
+
+—Basic Interface for Mobile App
+— Pass Photo to computer via Bluetooth
+
+
+
