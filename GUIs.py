@@ -9,6 +9,7 @@ class Window(Frame):
     def __init__(self, master=None):
         Frame.__init__(self, master)
         self.master = master
+        self.isAuth = 0
         self.image = Image.open('/Applications/Shredded Encryption/Background.jpg')
         self.background_image = ImageTk.PhotoImage(self.image)
         self.background_label = Label(self, image=self.background_image)
@@ -25,6 +26,7 @@ class Window(Frame):
         self.init_FButton()
         self.exitButton()
         self.changeKeyButton()
+        self.authButton()
     def init_window(self):
         self.master.title("Shredded Encryption")
 
@@ -33,48 +35,58 @@ class Window(Frame):
     def init_EncryptedList(self):
         Lb = Listbox(self, width = 15,height = 12,selectmode = MULTIPLE)
         i = 1
-        for x in Encrypted_List:
-            Lb.insert(i,x)
-            i += 1
-        Lb.place(x=150, y=0)
+        if self.isAuth == 1:
+            for x in Encrypted_List:
+                Lb.insert(i,x)
+                i += 1
+            Lb.place(x=150, y=0)
         DecryptButton = Button(self,text = "Decrypt Files", command = lambda: self.DecryptFiles(Lb.curselection()))
         DecryptButton.place(x=170,y = 210)
 
     def init_FButton(self):
         fbutton = Button(self, text = "Encrypt Files", command = self.load_file)
-        fbutton.place(x=20,y=60)
+        fbutton.place(x=20,y=93)
 
     def changeKeyButton(self):
         cKeyButton = Button(self, text = "Change Key", command = self.changeKeyCommand)
-        cKeyButton.place(x=22,y=93)
+        cKeyButton.place(x=22,y=120)
 
     def load_file(self):
-        fname = askopenfilenames()
-        size = len(fname)
-        for x in range(size):
-            piece = splitFiles(fname[x],key)
-            Encrypted_List.append((fname[x].rsplit('/', 1)[1]))
-            File_List.append((fname[x],piece))
-        self.init_EncryptedList()
+        if self.isAuth == 1:
+            fname = askopenfilenames()
+            size = len(fname)
+            for x in range(size):
+                piece = splitFiles(fname[x],key)
+                Encrypted_List.append((fname[x].rsplit('/', 1)[1]))
+                File_List.append((fname[x],piece))
+            self.init_EncryptedList()
 
+    def authButton(self):
+        authButton = Button(self,text = "Authenticate User", command = self.authenticateUser)
+        authButton.place(x=8,y=60)
+
+    def authenticateUser(self):
+        self.isAuth = 1
+        self.init_EncryptedList()
 
     def exitButton(self):
         exit = Button(self,text = 'Quit', command = self.quitCommand)
-        exit.place(x=45,y=130)
+        exit.place(x=45,y=150)
     def quitCommand(self):
             xpressed()
 
     def changeKeyCommand(self):
-        global key
-        global File_List
-        a = []
-        newKey = getKey()
-        for x in File_List:
-            piece_Files(x,key)
-            piece = splitFiles(x[0],newKey)
-            a.append((x[0],piece))
-        key = newKey
-        File_List = a
+        if self.isAuth == 1:
+            global key
+            global File_List
+            a = []
+            newKey = getKey()
+            for x in File_List:
+                piece_Files(x,key)
+                piece = splitFiles(x[0],newKey)
+                a.append((x[0],piece))
+            key = newKey
+            File_List = a
 
 
     def DecryptFiles(self,x):
