@@ -1,16 +1,19 @@
 from tkinter import *
+from tkinter import messagebox
 from tkinter.filedialog import askopenfilenames
 from Read_Files import *
 from PIL import ImageTk,Image
+from FacialRecognition import facialRecognition
 import os
 import csv
 class Window(Frame):
 
     def __init__(self, master=None):
+        global path
         Frame.__init__(self, master)
         self.master = master
         self.isAuth = 0
-        self.image = Image.open('/Applications/Shredded Encryption/Background.jpg')
+        self.image = Image.open(path + 'Background.jpg')
         self.background_image = ImageTk.PhotoImage(self.image)
         self.background_label = Label(self, image=self.background_image)
         self.background_label2 = Label(self, image=self.background_image)
@@ -33,7 +36,9 @@ class Window(Frame):
         self.pack(fill=BOTH, expand=1)
 
     def init_EncryptedList(self):
-        Lb = Listbox(self, width = 15,height = 12,selectmode = MULTIPLE)
+        Lb = Listbox(self, width = 20,height = 12,selectmode = MULTIPLE)
+        def selectAll():
+            Lb.select_set(0, END)
         i = 1
         if self.isAuth == 1:
             for x in Encrypted_List:
@@ -41,7 +46,11 @@ class Window(Frame):
                 i += 1
             Lb.place(x=150, y=0)
         DecryptButton = Button(self,text = "Decrypt Files", command = lambda: self.DecryptFiles(Lb.curselection()))
-        DecryptButton.place(x=170,y = 210)
+        DecryptButton.place(x=165,y = 240)
+        SelectButton = Button(self,text ="Select All", command = selectAll)
+        SelectButton.place(x=175,y=210)
+
+
 
     def init_FButton(self):
         fbutton = Button(self, text = "Encrypt Files", command = self.load_file)
@@ -49,7 +58,7 @@ class Window(Frame):
 
     def changeKeyButton(self):
         cKeyButton = Button(self, text = "Change Key", command = self.changeKeyCommand)
-        cKeyButton.place(x=22,y=120)
+        cKeyButton.place(x=22,y=125)
 
     def load_file(self):
         if self.isAuth == 1:
@@ -66,12 +75,16 @@ class Window(Frame):
         authButton.place(x=8,y=60)
 
     def authenticateUser(self):
-        self.isAuth = 1
-        self.init_EncryptedList()
+        result = facialRecognition()
+        if result:
+            self.isAuth = 1
+            self.init_EncryptedList()
+        else:
+            messagebox.showinfo("Authentacation Failed", "Please try to take another photo with the app")
 
     def exitButton(self):
         exit = Button(self,text = 'Quit', command = self.quitCommand)
-        exit.place(x=45,y=150)
+        exit.place(x=45,y=160)
     def quitCommand(self):
             xpressed()
 
@@ -106,27 +119,29 @@ class Window(Frame):
 Encrypted_List = []
 File_List = []
 key = getKey()
-if os.path.exists('/Applications/Shredded Encryption/directory.csv'):
-    with open('/Applications/Shredded Encryption/directory.csv', 'r') as f:
+path = "/Applications/ShreddedEncryption/"
+if os.path.exists(path + 'directory.csv'):
+    with open(path + 'directory.csv', 'r') as f:
             next(f)
             File_List= [tuple(line) for line in csv.reader(f)]
 
-if os.path.exists('/Applications/Shredded Encryption/fjkldfemsf'):
-    with open('/Applications/Shredded Encryption/fjkldfemsf', 'rb') as f:
+if os.path.exists(path + 'fjkldfemsf'):
+    with open(path + 'fjkldfemsf', 'rb') as f:
             key = f.readline()
 
 for x in File_List:
     Encrypted_List.append(x[0].rsplit('/', 1)[1])
 
 def xpressed():
-    with open('/Applications/Shredded Encryption/directory.csv', 'w') as csvfile:
+    with open(path + 'directory.csv', 'w') as csvfile:
         fieldnames = ['Filename', 'First Piece']
         writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
         writer.writeheader()
         for x in File_List:
             writer.writerow({'Filename': x[0], 'First Piece': x[1]})
-    os.remove('/Applications/Shredded Encryption/fjkldfemsf')
-    with open('/Applications/Shredded Encryption/fjkldfemsf', 'wb') as f:
+    if os.path.exists(path + 'fjkldfemsf'):
+        os.remove(path + 'fjkldfemsf')
+    with open(path + 'fjkldfemsf', 'wb') as f:
             f.write(key)
     root.destroy()
 

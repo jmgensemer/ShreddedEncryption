@@ -42,6 +42,7 @@ def change_filename(filename):
         Name of the first piece
 """
 def splitFiles(readFile,key):
+    path = "/Applications/ShreddedEncryption/FragmentedFiles/"
     encrypt_file(readFile, key)
     readf = open(readFile,"rb")
     filesize = os.path.getsize(readFile)
@@ -52,17 +53,17 @@ def splitFiles(readFile,key):
     j = 0
     for i in range(splitNumber):
         if (i == splitNumber - 1):
-            piece = open("/Applications/Shredded Encryption/" + fnames[i], "w")
+            piece = open(path + fnames[i], "w")
             piece.write(change_filename("haltcode00"))
             piece.close()
-            piece = open("/Applications/Shredded Encryption/" + fnames[i], "ab")
+            piece = open(path + fnames[i], "ab")
             piece.seek(10)
             piece.write(readf.read(lastPiece))
         else:
-            piece = open("/Applications/Shredded Encryption/" + fnames[i], "w")
+            piece = open(path + fnames[i], "w")
             piece.write(change_filename(fnames[i + 1]))
             piece.close()
-            piece = open("/Applications/Shredded Encryption/" + fnames[i], "ab")
+            piece = open(path + fnames[i], "ab")
             piece.seek(10)
             piece.write(readf.read(pieceSize))
         piece.close()
@@ -103,17 +104,18 @@ def findSizeofPieces(fileSize):
         file_tuple: A tuple that contains (Path/Filename, First Split Piece)
 """
 def piece_Files(file_tuple,key):
+    path = "/Applications/ShreddedEncryption/FragmentedFiles/"
     wholefile = open(file_tuple[0], "wb")
     name = change_filename(file_tuple[1])
     while(name != "haltcode00"):
-        open_piece = codecs.open("/Applications/Shredded Encryption/"+name,"r", encoding="utf-8")
+        open_piece = codecs.open(path+name,"r", encoding="utf-8")
         nextname = open_piece.read(len(name))
         open_piece.close()
-        open_piece = open("/Applications/Shredded Encryption/"+name, "rb")
+        open_piece = open(path+name, "rb")
         open_piece.seek(len(name))
-        size = os.path.getsize("/Applications/Shredded Encryption/" + name) - len(name)
+        size = os.path.getsize(path + name) - len(name)
         wholefile.write(open_piece.read(size))
-        os.remove("/Applications/Shredded Encryption/" + name)
+        os.remove(path + name)
         name = change_filename(nextname)
     wholefile.close()
     decrypt_file(file_tuple[0], key)
