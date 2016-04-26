@@ -120,41 +120,81 @@ def piece_Files(file_tuple,key):
     wholefile.close()
     decrypt_file(file_tuple[0], key)
 
-def pad(s):
-    return s + b"\0" * (AES.block_size - len(s) % AES.block_size)
+"""append \0 to the passed text to make its length divisible by 16.
+    Args:
+        s: plaintext in bytes
+    Uses:
+        block_size = 16 (Size of a data block (in bytes))
+    Returns:
+        edited text after padding which its length is now divisible by 16       
+"""
+def pad(plaintext):
+    return plaintext + b"\0" * (AES.block_size - len(plaintext) % AES.block_size)
 
+"""encrypt a plaintext using the key and AES 256-bit key
+    it uses Cipher-Block Chaining (CBC).
+    Args:
+        plaintext: a line of text
+        key: the key used to encrypt the plaintext
+    Returns:
+        cipheredtext
+"""
 def encrypt_text(plaintext, key):
     plaintext = pad(plaintext)
     iv = Random.new().read(AES.block_size)
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-    return iv + cipher.encrypt(plaintext)
+    ciphertext = AES.new(key, AES.MODE_CBC, iv)
+    return iv + ciphertext.encrypt(plaintext)
 
+"""decrypt a cipheredtext using the key and AES 256-bit key
+    it uses Cipher-Block Chaining (CBC).
+    Args:
+        cipheredtext: a line of cipheredtext
+        key: the key used to decrypt the cipheredtext
+    Returns:
+        plaintext
+"""
 def decrypt_text(cipheredtext, key):
     iv = cipheredtext[:AES.block_size]
-    cipher = AES.new(key, AES.MODE_CBC, iv)
-    plaintext = cipher.decrypt(cipheredtext[AES.block_size:])
+    ciphertext = AES.new(key, AES.MODE_CBC, iv)
+    plaintext = ciphertext.decrypt(cipheredtext[AES.block_size:])
     return plaintext.rstrip(b"\0")
 
-def encrypt_file(file_name, key):
-    fileout_name = file_name + '.enc'
-    with open(file_name, 'rb') as fo:
-        plaintext = fo.read()
-    enc = encrypt_text(plaintext, key)
-    with open(fileout_name, 'wb') as fo:
-        fo.write(enc)
-        os.remove(file_name)
-        os.rename(fileout_name,file_name)
+"""it reads in a file in bytes and it encrypts its content
+    using encrypt_text(plaintext, key) function.
+    Args:
+        fileinName: name of file to be encrypted
+        key: the key used to encrypt the file content
+"""
+def encrypt_file(fileinName, key):
+    fileoutName = fileinName + '.enc'
+    with open(fileinName, 'rb') as f:
+        plaintext = f.read()
+    cipheredtext = encrypt_text(plaintext, key)
+    with open(fileoutName, 'wb') as f:
+        f.write(cipheredtext)
+        os.remove(fileinName)
+        os.rename(fileoutName,fileinName)
 
-def decrypt_file(file_name,key):
-    fileout_name = file_name + '.dec'
-    with open(file_name, 'rb') as fo:
-        ciphertext = fo.read()
-    dec = decrypt_text(ciphertext, key)
-    with open(fileout_name, 'wb') as fo:
-        fo.write(dec)
-    os.remove(file_name)
-    os.rename(fileout_name, file_name)
+"""it reads in a file in bytes and it decrypts its content
+    using decrypt_text(cipheredtext, key) function.
+    Args:
+        fileinName: name of file to be decrypted
+        key: the key used to encrypt the file content
+"""
+def decrypt_file(fileinName,key):
+    fileoutName = fileinName + '.dec'
+    with open(fileinName, 'rb') as f:
+        ciphertext = f.read()
+    plaintext = decrypt_text(ciphertext, key)
+    with open(fileoutName, 'wb') as f:
+        f.write(plaintext)
+    os.remove(fileinName)
+    os.rename(fileoutName, fileinName)
 
+"""Generates a 256-bit key using time and date information.
+    Returns:
+        key in bytes
+"""
 def getKey():
     password = bytes(memoryview(time.ctime().encode()))
     dk = hashlib.pbkdf2_hmac('sha256', password, b'salt', 100000)
